@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>UTxO.Value</title><link rel="stylesheet" href="css/Agda.css"></head><body><pre class="Agda"><a id="1" class="Comment">------------------------------------------------------------------------</a>
+<a id="74" class="Comment">-- No multi-currency support.</a>
+<a id="104" class="Comment">------------------------------------------------------------------------</a>
+<a id="177" class="Keyword">module</a> <a id="184" href="UTxO.Value.html" class="Module">UTxO.Value</a> <a id="195" class="Keyword">where</a>
+
+<a id="202" class="Keyword">open</a> <a id="207" class="Keyword">import</a> <a id="214" href="Data.Bool.html" class="Module">Data.Bool</a> <a id="224" class="Keyword">using</a> <a id="230" class="Symbol">(</a><a id="231" href="Agda.Builtin.Bool.html#135" class="Datatype">Bool</a><a id="235" class="Symbol">)</a>
+<a id="237" class="Keyword">open</a> <a id="242" class="Keyword">import</a> <a id="249" href="Data.List.html" class="Module">Data.List</a> <a id="259" class="Keyword">using</a> <a id="265" class="Symbol">(</a><a id="266" href="Agda.Builtin.List.html#121" class="Datatype">List</a><a id="270" class="Symbol">;</a> <a id="272" href="Data.List.Base.html#4103" class="Function">sum</a><a id="275" class="Symbol">)</a>
+<a id="277" class="Keyword">open</a> <a id="282" class="Keyword">import</a> <a id="289" href="Data.Nat.html" class="Module">Data.Nat</a>  <a id="299" class="Keyword">using</a> <a id="305" class="Symbol">(</a><a id="306" href="Agda.Builtin.Nat.html#165" class="Datatype">ℕ</a><a id="307" class="Symbol">;</a> <a id="309" href="Agda.Builtin.Nat.html#298" class="Primitive Operator">_+_</a><a id="312" class="Symbol">)</a>
+  <a id="316" class="Keyword">renaming</a> <a id="325" class="Symbol">(</a><a id="326" href="Data.Nat.Properties.html#2239" class="Function Operator">_≟_</a> <a id="330" class="Symbol">to</a> <a id="333" href="Data.Nat.Properties.html#2239" class="Function Operator">_≟ℕ_</a><a id="337" class="Symbol">)</a>
+<a id="339" class="Keyword">open</a> <a id="344" class="Keyword">import</a> <a id="351" href="Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a> <a id="371" class="Keyword">using</a> <a id="377" class="Symbol">(</a><a id="378" href="Data.Nat.Properties.html#4783" class="Function Operator">_≥?_</a><a id="382" class="Symbol">)</a>
+
+<a id="385" class="Keyword">open</a> <a id="390" class="Keyword">import</a> <a id="397" href="Relation.Nullary.Decidable.html" class="Module">Relation.Nullary.Decidable</a>            <a id="435" class="Keyword">using</a> <a id="441" class="Symbol">(</a><a id="442" href="Relation.Nullary.Decidable.Core.html#1192" class="Function Operator">⌊_⌋</a><a id="445" class="Symbol">)</a>
+<a id="447" class="Keyword">open</a> <a id="452" class="Keyword">import</a> <a id="459" href="Relation.Binary.html" class="Module">Relation.Binary</a>                       <a id="497" class="Keyword">using</a> <a id="503" class="Symbol">(</a><a id="504" href="Relation.Binary.Definitions.html#4575" class="Function">Decidable</a><a id="513" class="Symbol">)</a>
+<a id="515" class="Keyword">open</a> <a id="520" class="Keyword">import</a> <a id="527" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="565" class="Keyword">using</a> <a id="571" class="Symbol">(</a><a id="572" href="Agda.Builtin.Equality.html#125" class="Datatype Operator">_≡_</a><a id="575" class="Symbol">)</a>
+
+<a id="Value"></a><a id="578" href="UTxO.Value.html#578" class="Function">Value</a> <a id="584" class="Symbol">=</a> <a id="586" href="Agda.Builtin.Nat.html#165" class="Datatype">ℕ</a>
+
+<a id="$0"></a><a id="589" href="UTxO.Value.html#589" class="Function">$0</a> <a id="592" class="Symbol">:</a> <a id="594" href="UTxO.Value.html#578" class="Function">Value</a>
+<a id="600" href="UTxO.Value.html#589" class="Function">$0</a> <a id="603" class="Symbol">=</a> <a id="605" class="Number">0</a>
+
+<a id="$"></a><a id="608" href="UTxO.Value.html#608" class="Function">$</a> <a id="610" class="Symbol">:</a> <a id="612" href="Agda.Builtin.Nat.html#165" class="Datatype">ℕ</a> <a id="614" class="Symbol">→</a> <a id="616" href="UTxO.Value.html#578" class="Function">Value</a>
+<a id="622" href="UTxO.Value.html#608" class="Function">$</a> <a id="624" href="UTxO.Value.html#624" class="Bound">v</a> <a id="626" class="Symbol">=</a> <a id="628" href="UTxO.Value.html#624" class="Bound">v</a>
+
+<a id="_+ᶜ_"></a><a id="631" href="UTxO.Value.html#631" class="Function Operator">_+ᶜ_</a> <a id="636" class="Symbol">:</a> <a id="638" href="UTxO.Value.html#578" class="Function">Value</a> <a id="644" class="Symbol">→</a> <a id="646" href="UTxO.Value.html#578" class="Function">Value</a> <a id="652" class="Symbol">→</a> <a id="654" href="UTxO.Value.html#578" class="Function">Value</a>
+<a id="660" href="UTxO.Value.html#631" class="Function Operator">_+ᶜ_</a> <a id="665" class="Symbol">=</a> <a id="667" href="Agda.Builtin.Nat.html#298" class="Primitive Operator">_+_</a>
+
+<a id="sumᶜ"></a><a id="672" href="UTxO.Value.html#672" class="Function">sumᶜ</a> <a id="677" class="Symbol">:</a> <a id="679" href="Agda.Builtin.List.html#121" class="Datatype">List</a> <a id="684" href="UTxO.Value.html#578" class="Function">Value</a> <a id="690" class="Symbol">→</a> <a id="692" href="UTxO.Value.html#578" class="Function">Value</a>
+<a id="698" href="UTxO.Value.html#672" class="Function">sumᶜ</a> <a id="703" class="Symbol">=</a> <a id="705" href="Data.List.Base.html#4103" class="Function">sum</a>
+
+<a id="710" class="Keyword">infix</a> <a id="716" class="Number">4</a> <a id="718" href="UTxO.Value.html#723" class="Function Operator">_≟ᶜ_</a>
+<a id="_≟ᶜ_"></a><a id="723" href="UTxO.Value.html#723" class="Function Operator">_≟ᶜ_</a> <a id="728" class="Symbol">:</a> <a id="730" href="Relation.Binary.Definitions.html#4575" class="Function">Decidable</a> <a id="740" class="Symbol">{</a><a id="741" class="Argument">A</a> <a id="743" class="Symbol">=</a> <a id="745" href="UTxO.Value.html#578" class="Function">Value</a><a id="750" class="Symbol">}</a> <a id="752" href="Agda.Builtin.Equality.html#125" class="Datatype Operator">_≡_</a>
+<a id="756" href="UTxO.Value.html#723" class="Function Operator">_≟ᶜ_</a> <a id="761" class="Symbol">=</a> <a id="763" href="Data.Nat.Properties.html#2239" class="Function Operator">_≟ℕ_</a>
+
+<a id="_≥ᶜ_"></a><a id="769" href="UTxO.Value.html#769" class="Function Operator">_≥ᶜ_</a> <a id="774" class="Symbol">:</a> <a id="776" href="UTxO.Value.html#578" class="Function">Value</a> <a id="782" class="Symbol">→</a> <a id="784" href="UTxO.Value.html#578" class="Function">Value</a> <a id="790" class="Symbol">→</a> <a id="792" href="Agda.Builtin.Bool.html#135" class="Datatype">Bool</a>
+<a id="797" href="UTxO.Value.html#797" class="Bound">v</a> <a id="799" href="UTxO.Value.html#769" class="Function Operator">≥ᶜ</a> <a id="802" href="UTxO.Value.html#802" class="Bound">v′</a> <a id="805" class="Symbol">=</a> <a id="807" href="Relation.Nullary.Decidable.Core.html#1192" class="Function Operator">⌊</a> <a id="809" href="UTxO.Value.html#797" class="Bound">v</a> <a id="811" href="Data.Nat.Properties.html#4783" class="Function Operator">≥?</a> <a id="814" href="UTxO.Value.html#802" class="Bound">v′</a> <a id="817" href="Relation.Nullary.Decidable.Core.html#1192" class="Function Operator">⌋</a>
+</pre></body></html>

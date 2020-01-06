@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>UTxO.Hashing.MetaHash</title><link rel="stylesheet" href="css/Agda.css"></head><body><pre class="Agda"><a id="1" class="Comment">------------------------------------------------------------------------</a>
+<a id="74" class="Comment">-- Naive hashing functions for UTxO types.</a>
+
+<a id="118" class="Comment">-- NB: uses meta-programming to be able to hash values of any type, by:</a>
+<a id="190" class="Comment">--     1. Quoting the given expression to get a `Term`</a>
+<a id="245" class="Comment">--     2. Showing the term to get a `String`</a>
+<a id="290" class="Comment">--     3. Naively converting the string to a number</a>
+<a id="342" class="Comment">--</a>
+<a id="345" class="Comment">-- EDIT: Does not work, since meta-programs are restricted to 2 stages..</a>
+<a id="418" class="Comment">------------------------------------------------------------------------</a>
+<a id="491" class="Keyword">module</a> <a id="498" href="UTxO.Hashing.MetaHash.html" class="Module">UTxO.Hashing.MetaHash</a> <a id="520" class="Keyword">where</a>
+
+<a id="527" class="Keyword">open</a> <a id="532" class="Keyword">import</a> <a id="539" href="Function.html" class="Module">Function</a>             <a id="560" class="Keyword">using</a> <a id="566" class="Symbol">(</a><a id="567" href="Function.Base.html#992" class="Function Operator">_∘_</a><a id="570" class="Symbol">)</a>
+<a id="572" class="Keyword">open</a> <a id="577" class="Keyword">import</a> <a id="584" href="Function.Definitions.html" class="Module">Function.Definitions</a> <a id="605" class="Keyword">using</a> <a id="611" class="Symbol">(</a><a id="612" href="Function.Definitions.html#862" class="Function">Injective</a><a id="621" class="Symbol">)</a>
+
+<a id="624" class="Keyword">open</a> <a id="629" class="Keyword">import</a> <a id="636" href="Data.Unit.html" class="Module">Data.Unit</a>     <a id="650" class="Keyword">using</a> <a id="656" class="Symbol">(</a><a id="657" href="Agda.Builtin.Unit.html#137" class="Record">⊤</a><a id="658" class="Symbol">)</a>
+<a id="660" class="Keyword">open</a> <a id="665" class="Keyword">import</a> <a id="672" href="Data.Bool.html" class="Module">Data.Bool</a>     <a id="686" class="Keyword">using</a> <a id="692" class="Symbol">(</a><a id="693" href="Agda.Builtin.Bool.html#135" class="Datatype">Bool</a><a id="697" class="Symbol">;</a> <a id="699" href="Agda.Builtin.Bool.html#160" class="InductiveConstructor">true</a><a id="703" class="Symbol">;</a> <a id="705" href="Agda.Builtin.Bool.html#154" class="InductiveConstructor">false</a><a id="710" class="Symbol">)</a>
+<a id="712" class="Keyword">open</a> <a id="717" class="Keyword">import</a> <a id="724" href="Data.Product.html" class="Module">Data.Product</a>  <a id="738" class="Keyword">using</a> <a id="744" class="Symbol">(</a><a id="745" href="Data.Product.html#1167" class="Function Operator">_×_</a><a id="748" class="Symbol">;</a> <a id="750" href="Agda.Builtin.Sigma.html#209" class="InductiveConstructor Operator">_,_</a><a id="753" class="Symbol">)</a>
+<a id="755" class="Keyword">open</a> <a id="760" class="Keyword">import</a> <a id="767" href="Data.List.html" class="Module">Data.List</a>     <a id="781" class="Keyword">using</a> <a id="787" class="Symbol">(</a><a id="788" href="Agda.Builtin.List.html#121" class="Datatype">List</a><a id="792" class="Symbol">;</a> <a id="794" href="Data.List.Base.html#8989" class="InductiveConstructor">[]</a><a id="796" class="Symbol">;</a> <a id="798" href="Agda.Builtin.List.html#173" class="InductiveConstructor Operator">_∷_</a><a id="801" class="Symbol">;</a> <a id="803" href="Data.List.Base.html#8843" class="Function Operator">_∷ʳ_</a><a id="807" class="Symbol">;</a> <a id="809" href="Data.List.Base.html#4344" class="Function Operator">[_]</a><a id="812" class="Symbol">;</a> <a id="814" href="Data.List.Base.html#4183" class="Function">length</a><a id="820" class="Symbol">;</a> <a id="822" href="Data.List.Base.html#4103" class="Function">sum</a><a id="825" class="Symbol">;</a> <a id="827" href="Data.List.Base.html#1383" class="Function">map</a><a id="830" class="Symbol">)</a>
+<a id="832" class="Keyword">open</a> <a id="837" class="Keyword">import</a> <a id="844" href="Data.Nat.html" class="Module">Data.Nat</a>      <a id="858" class="Keyword">using</a> <a id="864" class="Symbol">(</a><a id="865" href="Agda.Builtin.Nat.html#165" class="Datatype">ℕ</a><a id="866" class="Symbol">;</a> <a id="868" href="Agda.Builtin.Nat.html#298" class="Primitive Operator">_+_</a><a id="871" class="Symbol">;</a> <a id="873" href="Agda.Builtin.Nat.html#501" class="Primitive Operator">_*_</a><a id="876" class="Symbol">;</a> <a id="878" href="Agda.Builtin.Nat.html#388" class="Primitive Operator">_∸_</a><a id="881" class="Symbol">;</a> <a id="883" href="Agda.Builtin.Nat.html#196" class="InductiveConstructor">suc</a><a id="886" class="Symbol">)</a>
+<a id="888" class="Keyword">open</a> <a id="893" class="Keyword">import</a> <a id="900" href="Data.Nat.Show.html" class="Module">Data.Nat.Show</a> <a id="914" class="Keyword">using</a> <a id="920" class="Symbol">(</a><a id="921" href="Data.Nat.Show.html#1071" class="Function">show</a><a id="925" class="Symbol">)</a>
+<a id="927" class="Keyword">open</a> <a id="932" class="Keyword">import</a> <a id="939" href="Data.Fin.html" class="Module">Data.Fin</a>      <a id="953" class="Keyword">using</a> <a id="959" class="Symbol">(</a><a id="960" href="Data.Fin.Base.html#1187" class="Function">toℕ</a><a id="963" class="Symbol">)</a>
+<a id="965" class="Keyword">open</a> <a id="970" class="Keyword">import</a> <a id="977" href="Data.String.html" class="Module">Data.String</a>   <a id="991" class="Keyword">using</a> <a id="997" class="Symbol">(</a><a id="998" href="Agda.Builtin.String.html#206" class="Postulate">String</a><a id="1004" class="Symbol">;</a> <a id="1006" href="Agda.Builtin.String.html#262" class="Primitive">toList</a><a id="1012" class="Symbol">;</a> <a id="1014" href="Data.String.Base.html#1744" class="Function Operator">_++_</a><a id="1018" class="Symbol">)</a>
+<a id="1020" class="Keyword">open</a> <a id="1025" class="Keyword">import</a> <a id="1032" href="Data.Char.html" class="Module">Data.Char</a>     <a id="1046" class="Keyword">using</a> <a id="1052" class="Symbol">(</a><a id="1053" href="Agda.Builtin.Char.html#200" class="Postulate">Char</a><a id="1057" class="Symbol">;</a> <a id="1059" href="Data.Char.Base.html#1495" class="Function">toNat</a><a id="1064" class="Symbol">)</a>
+
+<a id="1067" class="Keyword">open</a> <a id="1072" class="Keyword">import</a> <a id="1079" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="1117" class="Keyword">using</a> <a id="1123" class="Symbol">(</a><a id="1124" href="Agda.Builtin.Equality.html#125" class="Datatype Operator">_≡_</a><a id="1127" class="Symbol">)</a>
+
+<a id="1130" class="Keyword">open</a> <a id="1135" class="Keyword">import</a> <a id="1142" href="Reflection.html" class="Module">Reflection</a>
+
+<a id="1154" class="Keyword">open</a> <a id="1159" class="Keyword">import</a> <a id="1166" href="UTxO.Hashing.Base.html" class="Module">UTxO.Hashing.Base</a>
+
+<a id="1185" class="Keyword">postulate</a>
+  <a id="_♯"></a><a id="1197" href="UTxO.Hashing.MetaHash.html#1197" class="Postulate Operator">_♯</a> <a id="1200" class="Symbol">:</a> <a id="1202" class="Symbol">∀</a> <a id="1204" class="Symbol">{</a><a id="1205" href="UTxO.Hashing.MetaHash.html#1205" class="Bound">A</a> <a id="1207" class="Symbol">:</a> <a id="1209" class="PrimitiveType">Set</a><a id="1212" class="Symbol">}</a> <a id="1214" class="Symbol">→</a> <a id="1216" href="UTxO.Hashing.Base.html#618" class="Function">Hash</a> <a id="1221" href="UTxO.Hashing.MetaHash.html#1205" class="Bound">A</a>
+  <a id="♯-injective"></a><a id="1225" href="UTxO.Hashing.MetaHash.html#1225" class="Postulate">♯-injective</a> <a id="1237" class="Symbol">:</a> <a id="1239" class="Symbol">∀</a> <a id="1241" class="Symbol">{</a><a id="1242" href="UTxO.Hashing.MetaHash.html#1242" class="Bound">A</a> <a id="1244" class="Symbol">:</a> <a id="1246" class="PrimitiveType">Set</a><a id="1249" class="Symbol">}</a> <a id="1251" class="Symbol">→</a> <a id="1253" href="Function.Definitions.html#862" class="Function">Injective</a> <a id="1263" class="Symbol">{</a><a id="1264" class="Argument">A</a> <a id="1266" class="Symbol">=</a> <a id="1268" href="UTxO.Hashing.MetaHash.html#1242" class="Bound">A</a><a id="1269" class="Symbol">}</a> <a id="1271" href="Agda.Builtin.Equality.html#125" class="Datatype Operator">_≡_</a> <a id="1275" href="Agda.Builtin.Equality.html#125" class="Datatype Operator">_≡_</a> <a id="1279" href="UTxO.Hashing.MetaHash.html#1197" class="Postulate Operator">_♯</a>
+
+<a id="1283" class="Comment">{-
+Show : Set → Set
+Show A = A → String
+
+infixl 20 _◇_
+_◇_ : String → String → String
+s ◇ s′ = s ++ &quot; &quot; ++ s′
+
+showList : ∀ {A : Set} → Show A → Show (List A)
+showList showA []       = &quot;&quot;
+showList showA (x ∷ xs) = showA x ◇ showList showA xs
+
+showRelevance : Show Relevance
+showRelevance relevant   = &quot;relevant&quot;
+showRelevance irrelevant = &quot;irrelevant&quot;
+
+showVisibility : Show Visibility
+showVisibility visible   = &quot;visible&quot;
+showVisibility hidden    = &quot;hidden&quot;
+showVisibility instance′ = &quot;instance&quot;
+
+showArg : ∀ {A : Set} → Show A → Show (Arg A)
+showArg showA (arg (arg-info v r) x) = &quot;arg&quot; ◇ showVisibility v ◇ showRelevance r ◇ showA x
+
+showPat : Show Pattern
+showClause : Show Clause
+showSort : Show Sort
+showTerm : Show Term
+
+showPats : Show (List (Arg Pattern))
+showPats = showList (showArg showPat)
+
+showArgs : Show (List (Arg Term))
+showArgs = showList (showArg showTerm)
+
+{-# TERMINATING #-}
+showPat (con c ps) = &quot;con&quot; ◇ showName c ◇ showPats ps
+showPat dot        = &quot;dot&quot;
+showPat (var s)    = &quot;var&quot; ◇ s
+showPat (lit l)    = &quot;lit&quot; ◇ showLiteral l
+showPat (proj f)   = &quot;proj&quot; ◇ showName f
+showPat absurd     = &quot;absurd&quot;
+
+{-# TERMINATING #-}
+showTerm (var x args)      = &quot;var&quot; ◇ show x ◇ showArgs args
+showTerm (con c args)      = &quot;con&quot; ◇ showName c ◇ showArgs args
+showTerm (def f args)      = &quot;def&quot; ◇ showName f ◇ showArgs args
+showTerm (lam v (abs s e)) = &quot;lam&quot; ◇ showVisibility v ◇ &quot;abs&quot; ◇ s ◇ showTerm e
+showTerm (pat-lam cs args) = &quot;pat-lam&quot; ◇ showList showClause cs ◇ showArgs args
+showTerm (pi e (abs s e′)) = &quot;pi&quot; ◇ showArg showTerm e ◇ &quot;abs&quot; ◇ s ◇ showTerm e′
+showTerm (sort s)          = &quot;sort&quot; ◇ showSort s
+showTerm (lit l)           = showLiteral l
+showTerm (meta m es)       = &quot;meta&quot; ◇ showMeta m ◇ showList (showArg showTerm) es
+showTerm unknown           = &quot;_&quot;
+
+showSort (set t) = showTerm t
+showSort (lit n) = show n
+showSort unknown = &quot;_&quot;
+
+showClause (clause ps t)      = &quot;clause&quot; ◇ showPats ps ◇ showTerm t
+showClause (absurd-clause ps) = &quot;absurd-clause&quot; ◇ showPats ps
+
+-- Finally, the meta hashing function.
+
+-- macro
+--   metaHash : Term → Term → TC ⊤
+--   metaHash (var n []) hole = do
+--     ctx ← getContext
+--     typeError [ strErr (show n) ]
+--   metaHash t          _    = typeError [ termErr t ]
+-- ← getDefinition
+-- do `s ← quoteTC (showTerm t)
+--    unify hole `s
+
+-- !!! DOES NOT WORK, I need runtime reflection :(
+-- _♯ : ∀ {ℓ} {A : Set ℓ} → Hash A
+-- x ♯ = (metaHash x) ♯ₛₜᵣ
+-}</a>
+</pre></body></html>
